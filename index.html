@@ -69,6 +69,13 @@
       margin-top: 40px;
       display: none;
     }
+
+    #continue-message {
+      font-size: 24px;
+      color: #dc3545;
+      margin-top: 40px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -76,32 +83,61 @@
 
   <div class="grid">
     <!-- Carte da grattare -->
-    <div class="card" data-reward="happy">
+    <div class="card" data-reward="happy_1">
       <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni.jpg');"></div>
+      <div class="reward" style="background-image: url('happy_benni_1.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_1">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_1.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_1">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_1.jpg');"></div>
     </div>
     <div class="card" data-reward="sad">
       <canvas></canvas>
       <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
     </div>
-    <div class="card" data-reward="happy">
+    <div class="card" data-reward="happy_2">
       <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni.jpg');"></div>
+      <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_2">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_2">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_3">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_3.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_3">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_3.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_3">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_3.jpg');"></div>
     </div>
     <div class="card" data-reward="sad">
       <canvas></canvas>
       <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni.jpg');"></div>
     </div>
   </div>
 
   <div id="message"></div>
+  <div id="continue-message"></div>
 
   <script>
-    let happyCount = 0; // Conta le carte happy selezionate
+    let happyCount_1 = 0; // Conta le carte happy_benni_1
+    let happyCount_2 = 0; // Conta le carte happy_benni_2
+    let happyCount_3 = 0; // Conta le carte happy_benni_3
+    let prizesGiven = 0; // Conta i regali dati
+    const prizeThreshold = 3; // Ogni 3 carte happy scoperte, un premio
 
     document.querySelectorAll('.card').forEach(card => {
       const canvas = card.querySelector('canvas');
@@ -144,29 +180,49 @@
           canvas.style.display = 'none'; // Rimuove la copertura
           reward.style.display = 'block'; // Mostra il premio
 
-          // Controlla il tipo di carta
-          if (card.dataset.reward === 'happy') {
-            happyCount++;
-            console.log("Numero di carte happy: ", happyCount); // Aggiungi il log per il debug
+          // Se è una carta "happy", aumenta il contatore per il tipo specifico
+          if (card.dataset.reward === 'happy_1') {
+            happyCount_1++;
+          } else if (card.dataset.reward === 'happy_2') {
+            happyCount_2++;
+          } else if (card.dataset.reward === 'happy_3') {
+            happyCount_3++;
           } else {
-            happyCount = 0; // Resetta il contatore se la carta è triste
+            document.getElementById('continue-message').textContent = "Continua a grattare!";
+            document.getElementById('continue-message').style.display = 'block';
           }
 
-          checkWin();
+          checkPrizes();
         }
       });
     });
 
-    function checkWin() {
-      if (happyCount === 3) {
-        document.getElementById('message').textContent = "Complimenti! Hai vinto un Super Regalo 🎉";
-        document.getElementById('message').style.display = 'block';
-
-        // Blocca ulteriori interazioni
-        document.querySelectorAll('.card canvas').forEach(canvas => {
-          canvas.style.pointerEvents = 'none';
-        });
+    function checkPrizes() {
+      // Controlla se ci sono tre carte happy dello stesso tipo
+      if (happyCount_1 >= prizeThreshold && prizesGiven < 3) {
+        happyCount_1 -= prizeThreshold; // Rimuove 3 carte dal conteggio
+        prizesGiven++; // Incrementa il contatore dei regali dati
+        displayPrize();
+      } else if (happyCount_2 >= prizeThreshold && prizesGiven < 3) {
+        happyCount_2 -= prizeThreshold; // Rimuove 3 carte dal conteggio
+        prizesGiven++; // Incrementa il contatore dei regali dati
+        displayPrize();
+      } else if (happyCount_3 >= prizeThreshold && prizesGiven < 3) {
+        happyCount_3 -= prizeThreshold; // Rimuove 3 carte dal conteggio
+        prizesGiven++; // Incrementa il contatore dei regali dati
+        displayPrize();
       }
+    }
+
+    function displayPrize() {
+      if (prizesGiven === 1) {
+        document.getElementById('message').textContent = "Complimenti! Hai vinto il Primo Regalo 🎉";
+      } else if (prizesGiven === 2) {
+        document.getElementById('message').textContent = "Complimenti! Hai vinto il Secondo Regalo 🎉";
+      } else if (prizesGiven === 3) {
+        document.getElementById('message').textContent = "Complimenti! Hai vinto il Terzo Regalo 🎉";
+      }
+      document.getElementById('message').style.display = 'block';
     }
   </script>
 </body>
