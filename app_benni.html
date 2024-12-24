@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gratta e Vinci - Happy o Sad</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr); /* 5 colonne */
+      gap: 20px;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    .card {
+      position: relative;
+      width: 120px;
+      height: 160px;
+      background-image: url('neutral_benni.jpg'); /* Immagine neutrale visibile inizialmente */
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    /* Il canvas sopra l'immagine neutrale per grattare */
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto; /* Permette l'interazione con il canvas */
+      z-index: 2; /* Sovrapposto all'immagine neutrale */
+    }
+
+    /* L'immagine che appare quando si gratta la carta */
+    .reward {
+      display: none; /* Premia nascosti fino alla selezione */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      z-index: 3; /* Sovrapposto al canvas */
+    }
+
+    #message {
+      font-size: 36px;
+      color: #28a745;
+      margin-top: 40px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gratta e Vinci - Happy o Sad</h1>
+
+  <div class="grid">
+    <!-- Carte da grattare -->
+    <div class="card" data-reward="happy">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni.jpg');"></div>
+    </div>
+    <div class="card" data-reward="sad">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni.jpg');"></div>
+    </div>
+    <div class="card" data-reward="sad">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni.jpg');"></div>
+    </div>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    let happyCount = 0; // Conta le carte happy selezionate
+
+    document.querySelectorAll('.card').forEach(card => {
+      const canvas = card.querySelector('canvas');
+      const reward = card.querySelector('.reward');
+      const ctx = canvas.getContext('2d');
+
+      // Imposta il gratta e vinci
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      // Disegna la copertura grigia sopra l'immagine neutrale
+      ctx.fillStyle = '#bbb';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      let isScratching = false;
+
+      // Imposta gli eventi del mouse per il grattamento
+      canvas.addEventListener('mousedown', () => isScratching = true);
+      canvas.addEventListener('mouseup', () => isScratching = false);
+      canvas.addEventListener('mousemove', e => {
+        if (!isScratching) return;
+
+        // Ottieni la posizione del mouse relativa al canvas
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // "Gratta" rimuovendo parte della copertura
+        ctx.clearRect(x - 15, y - 15, 30, 30);
+
+        // Controlla se abbastanza della copertura è stata rimossa
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let visible = 0;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          if (imageData.data[i + 3] === 0) visible++; // Conta i pixel trasparenti
+        }
+
+        const percentVisible = visible / (canvas.width * canvas.height);
+        if (percentVisible > 0.7) { // Se il 70% è visibile, mostra il premio
+          canvas.style.display = 'none'; // Rimuove la copertura
+          reward.style.display = 'block'; // Mostra il premio
+
+          // Controlla il tipo di carta
+          if (card.dataset.reward === 'happy') {
+            happyCount++;
+            console.log("Numero di carte happy: ", happyCount); // Aggiungi il log per il debug
+          } else {
+            happyCount = 0; // Resetta il contatore se la carta è triste
+          }
+
+          checkWin();
+        }
+      });
+    });
+
+    function checkWin() {
+      if (happyCount === 3) {
+        document.getElementById('message').textContent = "Complimenti! Hai vinto un Super Regalo 🎉";
+        document.getElementById('message').style.display = 'block';
+
+        // Blocca ulteriori interazioni
+        document.querySelectorAll('.card canvas').forEach(canvas => {
+          canvas.style.pointerEvents = 'none';
+        });
+      }
+    }
+  </script>
+</body>
+</html>
