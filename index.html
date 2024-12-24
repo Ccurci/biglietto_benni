@@ -64,37 +64,37 @@
     }
 
     #message, #continue-message {
-  font-size: 40px;
-  color: white;
-  background-color: white; /* Sfondo semi-trasparente */
-  padding: 30px;
-  border-radius: 10px;
-  position: fixed;
-  top: 50%; /* Posizione verticale centrata */
-  left: 50%; /* Posizione orizzontale centrata */
-  transform: translate(-50%, -50%); /* Centra esattamente */
-  z-index: 1000; /* Appare sopra le carte */
-  display: none; /* Nascondi inizialmente */
-  text-align: center;
-}
+      font-size: 40px;
+      color: white;
+      background-color: white; /* Sfondo semi-trasparente */
+      padding: 30px;
+      border-radius: 10px;
+      position: fixed;
+      top: 50%; /* Posizione verticale centrata */
+      left: 50%; /* Posizione orizzontale centrata */
+      transform: translate(-50%, -50%); /* Centra esattamente */
+      z-index: 1000; /* Appare sopra le carte */
+      display: none; /* Nascondi inizialmente */
+      text-align: center;
+    }
 
-#continue-message {
-  color: #dc3545; /* Rosso per il messaggio di continuare a grattare */
-  font-size: 40px;
-}
+    #continue-message {
+      color: #dc3545; /* Rosso per il messaggio di continuare a grattare */
+      font-size: 40px;
+    }
 
-#message {
-  font-size: 36px;
-  color: black; /* Verde per i messaggi di vincita */
-}
+    #message {
+      font-size: 36px;
+      color: black; /* Verde per i messaggi di vincita */
+    }
 
-#message.show {
-  display: block; /* Mostra il messaggio */
-}
+    #message.show {
+      display: block; /* Mostra il messaggio */
+    }
 
-#continue-message.show {
-  display: block; /* Mostra il messaggio di continuare a grattare */
-}
+    #continue-message.show {
+      display: block; /* Mostra il messaggio di continuare a grattare */
+    }
 
   </style>
 </head>
@@ -166,20 +166,34 @@
 
       // Gestione del "gratta e vinci"
       let isScratching = false;
+      // Gestione degli eventi per il grattamento
+      function handleScratchStart(e) {
+        isScratching = true;
+        e.preventDefault();
+      }
 
-      canvas.addEventListener('mousedown', () => isScratching = true);
-      canvas.addEventListener('mouseup', () => isScratching = false);
-      canvas.addEventListener('mousemove', (e) => {
+      function handleScratchEnd() {
+        isScratching = false;
+      }
+
+      function handleScratchMove(e) {
         if (!isScratching) return;
 
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        let x, y;
+        if (e.touches) {
+          const touch = e.touches[0];
+          x = touch.clientX ;
+          y = touch.clientY;
+        } else {
+          const rect = canvas.getBoundingClientRect();
+          x = e.clientX - rect.left;
+          y = e.clientY - rect.top;
+        }
 
-        // Rimuovi la copertura grigia per simulare lo scratching
-        ctx.clearRect(x - 10, y - 10, 20, 20);
+        // "Gratta" rimuovendo parte della copertura
+        ctx.clearRect(x+-0 , y-10 , 20, 20);
 
-        // Controlla se la copertura è stata rimossa sufficientemente
+        // Controlla se abbastanza della copertura è stata rimossa
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let visible = 0;
         for (let i = 0; i < imageData.data.length; i += 4) {
@@ -187,10 +201,21 @@
         }
 
         const percentVisible = visible / (canvas.width * canvas.height);
-        if (percentVisible > 0.8) { // Se il 70% è visibile, mostra l'immagine
+        if (percentVisible > 0.7) { // Se il 70% è visibile, mostra il premio
           reward.style.display = 'block'; // Mostra l'immagine sottostante
         }
-      });
+      }
+
+      // Aggiungi gli event listener per il touch
+      canvas.addEventListener('touchstart', handleScratchStart);
+      canvas.addEventListener('touchend', handleScratchEnd);
+      canvas.addEventListener('touchmove', handleScratchMove);
+
+      // Aggiungi gli event listener per il mouse
+      canvas.addEventListener('mousedown', handleScratchStart);
+      canvas.addEventListener('mouseup', handleScratchEnd);
+      canvas.addEventListener('mousemove', handleScratchMove);
+    
     });
   </script>
 
@@ -265,6 +290,7 @@
           checkPrizes();
         }
       });
+  
     });
   
     function checkPrizes() {
@@ -316,3 +342,5 @@
       message.style.display = 'none';
     }
   </script>
+</body>
+</html>
