@@ -21,7 +21,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(5, 1fr); /* 5 colonne */
+      grid-template-columns: repeat(4, 1fr); /* 5 colonne */
       gap: 20px;
       max-width: 800px;
       margin: 20px auto;
@@ -63,23 +63,43 @@
       z-index: 3; /* Sovrapposto al canvas */
     }
 
-    #message {
-      font-size: 36px;
-      color: #28a745;
-      margin-top: 40px;
-      display: none;
-    }
+    #message, #continue-message {
+  font-size: 40px;
+  color: white;
+  background-color: white; /* Sfondo semi-trasparente */
+  padding: 30px;
+  border-radius: 10px;
+  position: fixed;
+  top: 50%; /* Posizione verticale centrata */
+  left: 50%; /* Posizione orizzontale centrata */
+  transform: translate(-50%, -50%); /* Centra esattamente */
+  z-index: 1000; /* Appare sopra le carte */
+  display: none; /* Nascondi inizialmente */
+  text-align: center;
+}
 
-    #continue-message {
-      font-size: 24px;
-      color: #dc3545;
-      margin-top: 40px;
-      display: none;
-    }
+#continue-message {
+  color: #dc3545; /* Rosso per il messaggio di continuare a grattare */
+  font-size: 40px;
+}
+
+#message {
+  font-size: 36px;
+  color: black; /* Verde per i messaggi di vincita */
+}
+
+#message.show {
+  display: block; /* Mostra il messaggio */
+}
+
+#continue-message.show {
+  display: block; /* Mostra il messaggio di continuare a grattare */
+}
+
   </style>
 </head>
 <body>
-  <h1>Gratta e Vinci - Happy o Sad</h1>
+  <h1>GRATTA 3 BENNU UGUALI E TROVA UN REGALO!</h1>
 
   <div class="grid">
     <!-- Carte da grattare -->
@@ -99,9 +119,25 @@
       <canvas></canvas>
       <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
     </div>
+    <div class="card" data-reward="sad">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
+    </div>
     <div class="card" data-reward="happy_2">
       <canvas></canvas>
       <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_4">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_4.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_4">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_4.jpg');"></div>
+    </div>
+    <div class="card" data-reward="sad">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
     </div>
     <div class="card" data-reward="happy_2">
       <canvas></canvas>
@@ -110,6 +146,10 @@
     <div class="card" data-reward="happy_2">
       <canvas></canvas>
       <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
+    </div>
+    <div class="card" data-reward="happy_4">
+      <canvas></canvas>
+      <div class="reward" style="background-image: url('happy_benni_4.jpg');"></div>
     </div>
     <div class="card" data-reward="happy_3">
       <canvas></canvas>
@@ -136,50 +176,54 @@
     let happyCount_1 = 0; // Conta le carte happy_benni_1
     let happyCount_2 = 0; // Conta le carte happy_benni_2
     let happyCount_3 = 0; // Conta le carte happy_benni_3
+    let happyCount_4 = 0; // Conta le carte happy_benni_4
     let prizesGiven = 0; // Conta i regali dati
     const prizeThreshold = 3; // Ogni 3 carte happy scoperte, un premio
-
+  
     document.querySelectorAll('.card').forEach(card => {
       const canvas = card.querySelector('canvas');
       const reward = card.querySelector('.reward');
       const ctx = canvas.getContext('2d');
-
+  
       // Imposta il gratta e vinci
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
-
+  
       // Disegna la copertura grigia sopra l'immagine neutrale
       ctx.fillStyle = '#bbb';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+  
       let isScratching = false;
-
+  
       // Imposta gli eventi del mouse per il grattamento
-      canvas.addEventListener('mousedown', () => isScratching = true);
+      canvas.addEventListener('mousedown', () => {
+        isScratching = true;
+        hideMessages(); // Nasconde i messaggi quando inizia il grattamento
+      });
       canvas.addEventListener('mouseup', () => isScratching = false);
       canvas.addEventListener('mousemove', e => {
         if (!isScratching) return;
-
+  
         // Ottieni la posizione del mouse relativa al canvas
         const rect = canvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-
+  
         // "Gratta" rimuovendo parte della copertura
-        ctx.clearRect(x - 15, y - 15, 30, 30);
-
+        ctx.clearRect(x - 10, y - 10, 20, 20);
+  
         // Controlla se abbastanza della copertura è stata rimossa
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         let visible = 0;
         for (let i = 0; i < imageData.data.length; i += 4) {
           if (imageData.data[i + 3] === 0) visible++; // Conta i pixel trasparenti
         }
-
+  
         const percentVisible = visible / (canvas.width * canvas.height);
         if (percentVisible > 0.7) { // Se il 70% è visibile, mostra il premio
           canvas.style.display = 'none'; // Rimuove la copertura
           reward.style.display = 'block'; // Mostra il premio
-
+  
           // Se è una carta "happy", aumenta il contatore per il tipo specifico
           if (card.dataset.reward === 'happy_1') {
             happyCount_1++;
@@ -187,43 +231,64 @@
             happyCount_2++;
           } else if (card.dataset.reward === 'happy_3') {
             happyCount_3++;
+          } else if (card.dataset.reward === 'happy_4') {
+            happyCount_4++
           } else {
-            document.getElementById('continue-message').textContent = "Continua a grattare!";
-            document.getElementById('continue-message').style.display = 'block';
+            showContinueMessage(); // Se è una "sad", mostra il messaggio
           }
-
+  
           checkPrizes();
         }
       });
     });
-
+  
     function checkPrizes() {
       // Controlla se ci sono tre carte happy dello stesso tipo
-      if (happyCount_1 >= prizeThreshold && prizesGiven < 3) {
+      if (happyCount_1 >= prizeThreshold && prizesGiven < 4) {
         happyCount_1 -= prizeThreshold; // Rimuove 3 carte dal conteggio
         prizesGiven++; // Incrementa il contatore dei regali dati
         displayPrize();
-      } else if (happyCount_2 >= prizeThreshold && prizesGiven < 3) {
+      } else if (happyCount_2 >= prizeThreshold && prizesGiven < 4) {
         happyCount_2 -= prizeThreshold; // Rimuove 3 carte dal conteggio
         prizesGiven++; // Incrementa il contatore dei regali dati
         displayPrize();
-      } else if (happyCount_3 >= prizeThreshold && prizesGiven < 3) {
+      } else if (happyCount_3 >= prizeThreshold && prizesGiven < 4) {
+        happyCount_3 -= prizeThreshold; // Rimuove 3 carte dal conteggio
+        prizesGiven++; // Incrementa il contatore dei regali dati
+        displayPrize();
+      } else if (happyCount_4 >= prizeThreshold && prizesGiven < 4) {
         happyCount_3 -= prizeThreshold; // Rimuove 3 carte dal conteggio
         prizesGiven++; // Incrementa il contatore dei regali dati
         displayPrize();
       }
     }
-
+  
     function displayPrize() {
+      const message = document.getElementById('message');
       if (prizesGiven === 1) {
-        document.getElementById('message').textContent = "Complimenti! Hai vinto il Primo Regalo 🎉";
+        message.textContent = "Complimenti! Hai trovato 3 Bennu uguali!\n\nSapendo quanto ti piacciono i piedi ho deciso di farti un dono degno di questo amore🦶... Indovina dove può essere? ";
       } else if (prizesGiven === 2) {
-        document.getElementById('message').textContent = "Complimenti! Hai vinto il Secondo Regalo 🎉";
+        message.textContent = "Complimenti! Hai trovato 3 Bennu uguali!\n\n L'ossessione della pulizia ti attanaglia, e tra freddo e saponi le tua manine stanno per piangere. Ma forse è la volta giusta che lavando nuovamente le mani qualcosa cambia... ";
       } else if (prizesGiven === 3) {
-        document.getElementById('message').textContent = "Complimenti! Hai vinto il Terzo Regalo 🎉";
+        message.textContent = "Complimenti! Hai trovato 3 Bennu uguali!\n\n Non so più che inventarmi... Prova a vedere se c'è qualcosa nel nuovo posto preferito di Minù ;)";
       }
-      document.getElementById('message').style.display = 'block';
+      else if (prizesGiven === 4) {
+        message.textContent = "Complimenti! Hai trovato 3 Bennu uguali!\n\n Siamo arrivati all'ultimo regalo, sicuramente il più inaspettato... Prova a chiedere alla tua amata sorella se ha qualcosa da darti! ";
+      }
+      message.style.display = 'block';
+    }
+  
+    function showContinueMessage() {
+      const continueMessage = document.getElementById('continue-message');
+      continueMessage.textContent = "Continua a grattare!";
+      continueMessage.style.display = 'block';
+    }
+  
+    function hideMessages() {
+      const continueMessage = document.getElementById('continue-message');
+      const message = document.getElementById('message');
+      continueMessage.style.display = 'none';
+      message.style.display = 'none';
     }
   </script>
-</body>
-</html>
+  
