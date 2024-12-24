@@ -102,72 +102,97 @@
   <h1>GRATTA 3 BENNU UGUALI E TROVA UN REGALO!</h1>
 
   <div class="grid">
-    <!-- Carte da grattare -->
-    <div class="card" data-reward="happy_1">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_1.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_1">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_1.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_1">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_1.jpg');"></div>
-    </div>
-    <div class="card" data-reward="sad">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
-    </div>
-    <div class="card" data-reward="sad">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_2">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_4">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_4.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_4">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_4.jpg');"></div>
-    </div>
-    <div class="card" data-reward="sad">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_2">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_2">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_2.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_4">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_4.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_3">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_3.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_3">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_3.jpg');"></div>
-    </div>
-    <div class="card" data-reward="happy_3">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('happy_benni_3.jpg');"></div>
-    </div>
-    <div class="card" data-reward="sad">
-      <canvas></canvas>
-      <div class="reward" style="background-image: url('sad_benni.jpg');"></div>
-    </div>
+    <!-- Le carte saranno distribuite casualmente qui -->
   </div>
+
+  <script>
+    // Lista delle immagini delle carte (3 di tipo "happy_1", "happy_2", "happy_3" e 4 di tipo "sad")
+    const images = [
+      {type: 'happy_1', image: 'happy_benni_1.jpg'},
+      {type: 'happy_1', image: 'happy_benni_1.jpg'},
+      {type: 'happy_1', image: 'happy_benni_1.jpg'},
+      {type: 'happy_2', image: 'happy_benni_2.jpg'},
+      {type: 'happy_2', image: 'happy_benni_2.jpg'},
+      {type: 'happy_2', image: 'happy_benni_2.jpg'},
+      {type: 'happy_3', image: 'happy_benni_3.jpg'},
+      {type: 'happy_3', image: 'happy_benni_3.jpg'},
+      {type: 'happy_3', image: 'happy_benni_3.jpg'},
+      {type: 'happy_4', image: 'happy_benni_4.jpg'},
+      {type: 'happy_4', image: 'happy_benni_4.jpg'},
+      {type: 'happy_4', image: 'happy_benni_4.jpg'},
+      {type: 'sad', image: 'sad_benni.jpg'},
+      {type: 'sad', image: 'sad_benni.jpg'},
+      {type: 'sad', image: 'sad_benni.jpg'},
+      {type: 'sad', image: 'sad_benni.jpg'}
+    ];
+
+    // Funzione per mescolare l'array delle immagini
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Scambia gli elementi
+      }
+    }
+
+    // Mescola l'array delle immagini
+    shuffleArray(images);
+
+    // Seleziona l'elemento grid dal DOM
+    const grid = document.querySelector('.grid');
+
+    // Crea e inserisce le carte nella griglia
+    images.forEach(item => {
+      const card = document.createElement('div');
+      card.classList.add('card');
+      card.setAttribute('data-reward', item.type); // Imposta l'attributo data-reward
+      grid.appendChild(card);
+
+      // Aggiungi il canvas per il "gratta e vinci"
+      const canvas = document.createElement('canvas');
+      card.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      canvas.width = 120;
+      canvas.height = 160;
+
+      // Disegna la copertura grigia sopra l'immagine neutrale
+      ctx.fillStyle = '#bbb';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Aggiungi l'elemento reward che contiene l'immagine da rivelare
+      const reward = document.createElement('div');
+      reward.classList.add('reward');
+      reward.style.backgroundImage = `url('${item.image}')`;
+      card.appendChild(reward);
+
+      // Gestione del "gratta e vinci"
+      let isScratching = false;
+
+      canvas.addEventListener('mousedown', () => isScratching = true);
+      canvas.addEventListener('mouseup', () => isScratching = false);
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isScratching) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Rimuovi la copertura grigia per simulare lo scratching
+        ctx.clearRect(x - 15, y - 15, 30, 30);
+
+        // Controlla se la copertura è stata rimossa sufficientemente
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let visible = 0;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          if (imageData.data[i + 3] === 0) visible++; // Conta i pixel trasparenti
+        }
+
+        const percentVisible = visible / (canvas.width * canvas.height);
+        if (percentVisible > 0.7) { // Se il 70% è visibile, mostra l'immagine
+          reward.style.display = 'block'; // Mostra l'immagine sottostante
+        }
+      });
+    });
+  </script>
 
   <div id="message"></div>
   <div id="continue-message"></div>
