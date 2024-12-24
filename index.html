@@ -166,6 +166,19 @@
 
       // Gestione del "gratta e vinci"
       let isScratching = false;
+      function getTouchPosition(e, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        let x, y;
+        if (e.touches) {
+          const touch = e.touches[0];
+          x = touch.clientX - rect.left;
+          y = touch.clientY - rect.top;
+        } else {
+          x = e.clientX - rect.left;
+          y = e.clientY - rect.top;
+        }
+        return { x, y };
+      }
       // Gestione degli eventi per il grattamento
       function handleScratchStart(e) {
         isScratching = true;
@@ -179,19 +192,11 @@
       function handleScratchMove(e) {
         if (!isScratching) return;
 
-        let x, y;
-        if (e.touches) {
-          const touch = e.touches[0];
-          x = touch.clientX ;
-          y = touch.clientY;
-        } else {
-          const rect = canvas.getBoundingClientRect();
-          x = e.clientX - rect.left;
-          y = e.clientY - rect.top;
-        }
+        const { x, y } = getTouchPosition(e, canvas);
+
 
         // "Gratta" rimuovendo parte della copertura
-        ctx.clearRect(x+-0 , y-10 , 20, 20);
+        ctx.clearRect(x-10 , y-10 , 20, 20);
 
         // Controlla se abbastanza della copertura è stata rimossa
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
