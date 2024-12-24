@@ -177,7 +177,7 @@
         const y = e.clientY - rect.top;
 
         // Rimuovi la copertura grigia per simulare lo scratching
-        ctx.clearRect(x - 15, y - 15, 30, 30);
+        ctx.clearRect(x - 10, y - 10, 20, 20);
 
         // Controlla se la copertura è stata rimossa sufficientemente
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -187,7 +187,7 @@
         }
 
         const percentVisible = visible / (canvas.width * canvas.height);
-        if (percentVisible > 0.7) { // Se il 70% è visibile, mostra l'immagine
+        if (percentVisible > 0.8) { // Se il 70% è visibile, mostra l'immagine
           reward.style.display = 'block'; // Mostra l'immagine sottostante
         }
       });
