@@ -190,6 +190,7 @@
 
       function handleScratchMove(e) {
         if (!isScratching) return;
+        e.preventDefault();
 
         const { x, y } = getTouchPosition(e, canvas);
 
@@ -256,9 +257,28 @@
       });
       // Aggiungi gli event listener per il touch
       canvas.addEventListener('touchend', () => isScratching = false);
+      canvas.addEventListener('touchstart', () => {
+        isScratching = true;
+        hideMessages(); // Nasconde i messaggi quando inizia il grattamento
+      });
       canvas.addEventListener('touchmove', e => {
+        function getTouchPosition(e, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        let x, y;
+        if (e.touches) {
+          const touch = e.touches[0];
+          x = touch.clientX - rect.left;
+          y = touch.clientY - rect.top;
+        } else {
+          x = e.clientX - rect.left;
+          y = e.clientY - rect.top;
+        }
+        return { x, y };
+      }
+        
         if (!isScratching) return;
-
+        e.preventDefault();
+        
         const { x, y } = getTouchPosition(e, canvas);
 
 
